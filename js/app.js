@@ -3,7 +3,7 @@ var activeTab = {
   geography:"cty",
   name:"COUNTYNAME"
 };
-var zoomThreshold = 22;
+var zoomThreshold = 8;
 
 // var layersArray = ['2012results-cty','2012results-vtd','2012results-sen','2012results-hse','2012results-cng','2012results-cty-hover','2012results-vtd-hover','2012results-sen-hover','2012results-hse-hover','2012results-cng-hover']
 var layersArray = []; // at 0.22.0 you can no longer have undefined layers in array - must push them dynamically
@@ -33,12 +33,12 @@ function initialize(){
 		minZoom: 6
 	});
 
-    map.addControl(new mapboxgl.Navigation({
-    	position:'top-right'
-    }));
+    var nav = new mapboxgl.NavigationControl({position: 'top-right'}); // position is optional
+    map.addControl(nav);
 
     // geocoder = new google.maps.Geocoder; //ccantey.dgxr9hbq
     geocoder = new mapboxgl.Geocoder();
+
     map.on('load', function () {
     	// add vector source:
 	    map.addSource('electionResults', {
@@ -49,27 +49,30 @@ function initialize(){
         var layers = [
             //name, minzoom, maxzoom, filter, paint fill-color, stops, paint fill-opacity, stops
 	        [
-		        'vtd-DFL',                                 //layers[0] = id
-		        3,                                     //layers[1] = minzoom
-		        zoomThreshold,                         //layers[2] = maxzoom
-		        ["all",['==', 'UNIT', 'vtd'],['==', 'USPRSWIN', 'DFL']],         //layers[3] = filter
-		        activeTab.selection+'PCT',           //layers[4] = fill-color property -- geojson.winner (add this property to geojson)
-		        [[51, '#bea0dd'],[57, '#a9a5d9'],[100, '#6582ac']],  //layers[5] = fill-color stops -- ['dfl':blue, 'r':red,'i':yellow]
-		        activeTab.selection+'TOTAL',           //layers[6] = fill-opacity property
-		        [                                      //layers[7] = fill-opacity stops (based on MN population)
-		            [0, 0.1],[750, 0.25],[800, 0.5],[900, 0.7],[1500, 0.8],[2500, .99]
-		        ]
-		        ,                                     
-		        'rgba(255, 0, 0, 0)'                                //layers[8] = outline color
+		        'cty',                               //layers[0] = id
+		        3,                                   //layers[1] = minzoom
+		        zoomThreshold,                       //layers[2] = maxzoom
+		        ['==', 'UNIT', 'cty'],               //layers[3] = filter
+		        activeTab.selection+'WIN',           //layers[4] = fill-color property -- geojson.winner (add this property to geojson)
+		        [['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']],  //layers[5] = fill-color stops -- ['dfl':blue, 'r':red,'i':yellow]
+		        activeTab.selection+'TOTAL',         //layers[6] = fill-opacity property
+		        [                                    //layers[7] = fill-opacity stops (based on MN population)
+		            [0, 0.25],
+		            [17000, 0.45],
+		            [53000, 0.6],
+		            [140000, 0.7],
+		            [280000, 0.8],
+		            [700000, .99]
+		        ],                                     
+		        'hsl(55, 11%, 96%)'                  //layers[8] = outline color
 	        ], 
 
-   	        ['vtd-R', 3, zoomThreshold, ["all",['==', 'UNIT', 'vtd'],['==', 'USPRSWIN', 'R']], activeTab.selection+'PCT', [[51, '#bea0dd'],[57, '#cc8899'],[100, '#cc7575']], activeTab.selection+'TOTAL', [[0, 0.1],[750, 0.25],[800, 0.5],[900, 0.7],[1500, 0.8],[2500, .99]], 'rgba(255, 0, 0, 0)'],
-   	        ['vtd-hover', zoomThreshold, 20, ['all', ['==', 'UNIT', 'vtd'], ["==", "VTD", ""]], 'USPRSTOTAL', [[6000, 'orange']], activeTab.selection+'PCT', [[6000, .5]], 'white']
-            
+   	        ['vtd', zoomThreshold, 20, ['==', 'UNIT', 'vtd'], activeTab.selection+'WIN', [['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']], activeTab.selection+'PCT', [[0, 0.25],[50, 0.45],[55, 0.6],[60, 0.7],[100, .99]], '#b8bbbf'],
+   	        ['vtd-hover', zoomThreshold, 20, ['all', ['==', 'UNIT', 'vtd'], ["==", "VTD", ""]], 'USPRSTOTAL', [[6000, 'orange']], activeTab.selection+'PCT', [[6000, .5]], 'white'],
+            ['cty-hover', 3, zoomThreshold, ['all', ['==', 'UNIT', 'cty'], ["==", "COUNTYNAME", ""]], 'USPRSTOTAL', [[6000, 'orange']], activeTab.selection+'TOTAL', [[6000, .5]], 'white']
 	    ];      
 
-        layers.forEach(addLayer)
-
+        layers.forEach(addLayer);
 	});//end map on load
 } //end initialize
 
@@ -84,7 +87,7 @@ function changeData(activetab){
 	        map.setLayoutProperty('cty-symbols', 'visibility', 'visible');
 	        popLegendEl.style.display = 'block';
             pctLegendEl.style.display = 'none';
-            $('.sidebar-results').show();
+            $('#candidate-table').show();
             if (activeTab.selection == 'USPRS'){
             	$('.td-image').show();
             	$('#candidate1photo').attr('src',"img/barack.jpg");
@@ -96,6 +99,7 @@ function changeData(activetab){
             	$('#candidate2').html('Mitt Romney (R)');
 		        $('#candidate2votes').html('6,601,125');
 		        $('#candidate2percent').html('45.0% ');
+		        $('#totalvotes').html('14,682,805');
             } 
             else {
             	$('#candidate1photo').attr('src',"");
@@ -106,11 +110,12 @@ function changeData(activetab){
 		        $('#candidate2photo').attr('src',"");
             	$('#candidate2').html('Kurt Bills (R)');
 		        $('#candidate2votes').html('4,339,870');
-		        $('#candidate2percent').html('30.5% ')
+		        $('#candidate2percent').html('30.5% ');
+		        $('#totalvotes').html('14,216,035');
             }
 	        break;
 	    case "cng": 
-	        $('.sidebar-results').hide();
+	        $('#candidate-table').hide();
 	        var opacity = [[0, 0.25],[50, 0.45],[55, 0.6],[60, 0.7],[100, .99]];
 	        var opacityField = activeTab.selection+'PCT';
 	        map.setLayoutProperty('cng-lines', 'visibility', 'visible');
@@ -119,7 +124,7 @@ function changeData(activetab){
             pctLegendEl.style.display = 'block';
 	        break;
 	    case "sen": 
-	        $('.sidebar-results').hide();
+	        $('#candidate-table').hide();
 	        var opacity = [[0, 0.25],[50, 0.45],[55, 0.6],[60, 0.7],[100, .99]];
 	        var opacityField = activeTab.selection+'PCT';
 	        map.setLayoutProperty('sen-lines', 'visibility', 'visible');
@@ -128,7 +133,7 @@ function changeData(activetab){
             pctLegendEl.style.display = 'block';
 	        break;
 	    case "hse":
-	        $('.sidebar-results').hide(); 
+	        $('#candidate-table').hide(); 
 	        var opacity = [[0, 0.25],[50, 0.45],[55, 0.6],[60, 0.7],[100, .99]];
 	        var opacityField = activeTab.selection+'PCT';
 	        map.setLayoutProperty('hse-lines', 'visibility', 'visible');
@@ -148,6 +153,7 @@ function changeData(activetab){
 	layer.forEach(addLayer)
 }
 
+//remove layersArray element per 0.22.0
 function spliceArray(a){
 	var index = layersArray.indexOf(a);    // <-- Not supported in <IE9
 	if (index !== -1) {
@@ -168,7 +174,7 @@ function addLayer(layer) {
 		        "layout": {},
 		        "paint": {		        	
 		            "fill-color": {
-		            	//"type":'categorical',
+		            	"type":'categorical',
 		            	"property": layer[4], //layers[4] = fill-color property -- geojson.winner (add this property to geojson)
 		            	"stops": layer[5],    //layers[5] = fill-color stops -- ['dfl':blue, 'r':red,'i':yellow]
 		            },
@@ -185,7 +191,6 @@ function addLayer(layer) {
 
 function showResults(activeTab, feature){
     // console.log(feature)
-    // console.log(feature)
 	var content = '';
 	var header ='';
 	var geography = '';
@@ -196,8 +201,13 @@ function showResults(activeTab, feature){
 	};
 	
 	var winner = (feature) ? feature[activeTab.selection+'WIN'] : '';
-
-	var percentage = feature[activeTab.selection+winner]*100/feature[activeTab.selection+'TOTAL'];
+    if (winner === 'TIE'){
+        var percentage = feature[activeTab.selection+'DFL']*100/feature[activeTab.selection+'TOTAL'];
+    } else {
+    	var percentage = feature[activeTab.selection+winner]*100/feature[activeTab.selection+'TOTAL'];
+    }
+	
+	// console.log(winner, feature[activeTab.selection+'WIN'])
 
  // //view feature properties for each selection
  //    var results = {};
@@ -233,7 +243,7 @@ function showResults(activeTab, feature){
 	switch (activeTab.selection) {
     case "USPRS":
         $('.td-image').show();
-        $('#thirdwheel').show();
+        // $('#thirdwheel').show();
         content += "<tr>"+geography+"</tr>";
         content += "<tr><th>U.S. President: </th><td> At-large</td></tr>";
         content += "<tr><th>"+unit+" Winner: </th><td class='winner-"+winner+"'>"+winner+" </td></tr>";
@@ -248,7 +258,7 @@ function showResults(activeTab, feature){
         break;
     case "USSEN":
         $('.td-image').hide();
-        $('#thirdwheel').hide();
+        // $('#thirdwheel').hide();
         content += "<tr>"+geography+"</tr>";
         content += "<tr><th>U.S. Senate: </th><td> At-large</td></tr>";
         content += "<tr><th>"+unit+" Winner: </th><td class='winner-"+winner+"'>"+winner+" </td></tr>";
@@ -265,7 +275,7 @@ function showResults(activeTab, feature){
         break;
     case "USREP":
         $('.td-image').hide();
-        $('#thirdwheel').hide();
+        // $('#thirdwheel').hide();
         data['district'] = feature.CONGDIST;
         content += "<tr>"+geography+"</tr>";
         content += "<tr><th>"+unit+" Winner: </th><td class='winner-"+winner+"'>"+winner+" </td></tr>";
@@ -279,7 +289,7 @@ function showResults(activeTab, feature){
         break;
     case "MNSEN":
         $('.td-image').hide();
-        $('#thirdwheel').hide();
+        // $('#thirdwheel').hide();
         data['district'] = feature.MNSENDIST;
         content += "<tr>"+geography+"</tr>";
         content += "<tr><th>"+unit+" Winner: </th><td class='winner-"+winner+"'>"+winner+" </td></tr>";
@@ -292,7 +302,7 @@ function showResults(activeTab, feature){
         break;
     case "MNLEG":
         $('.td-image').hide();
-        $('#thirdwheel').hide();
+        // $('#thirdwheel').hide();
         data['district'] = feature.MNLEGDIST;
         content += "<tr>"+geography+"</tr>";
         content += "<tr><th>"+unit+" Winner: </th><td class='winner-"+winner+"'>"+winner+" </td></tr>";
@@ -304,7 +314,7 @@ function showResults(activeTab, feature){
         content += "<tr><th>Total Votes: </th><td>"+feature[activeTab.selection+'TOTAL'].toLocaleString()+"</td></tr>";
         break;
     }
-    $('.sidebar-results').show();
+    $('#candidate-table').show();
     // console.log(data);
     $.ajax("php/winners.php", {
 		data: data,
@@ -317,6 +327,7 @@ function showResults(activeTab, feature){
 	});
 	document.getElementById('precinct-header').innerHTML = header;
     document.getElementById('precinct-results').innerHTML = content;
+    $('#clear').show();
 
 	// sort the results, which returns an array
 	// var resultsArray = sortObjectProperties(results);
@@ -476,6 +487,23 @@ function removeLayers(c){
 
 	switch (c){
 		case'all':
+		map.setFilter("2012results-vtd", ['all', ['==', 'UNIT', 'vtd'], ["!=", "VTD",'any']]);
+        map.setFilter("2012results-vtd-hover", ['all', ['==', 'UNIT', 'vtd'], ["==", "VTD",'all']]);
+        // map.setFilter("2012results-cty", ['all', ['==', 'UNIT', 'cty'], ["!=", "cty",'any']]);
+        // map.setFilter("2012results-cty-hover", ['all', ['==', 'UNIT', 'cty'], ["==", "cty",'all']]);
+
+        map.setFilter("2012results-"+activeTab.geography, ['all', ['==', 'UNIT', activeTab.geography], ["!=", activeTab.name, 'all']]);
+        map.setFilter("2012results-"+activeTab.geography+"-hover", ['all', ['==', 'UNIT', activeTab.geography], ["==", activeTab.name, 'all']]);
+
+        document.getElementById('precinct-header').innerHTML = "";
+        document.getElementById('precinct-results').innerHTML = "";
+        $('#clear').hide();
+
+        if(activeTab.selection == 'USPRS' || activeTab.selection == 'USSEN'){
+        	$('#candidate-table').show();
+        } else{
+        	$('#candidate-table').hide();
+        }
 		//remove old pushpin and previous selected district layers 
 		if (typeof map.getSource('pointclick') !== "undefined" ){ 
 			// console.log('remove previous marker');
