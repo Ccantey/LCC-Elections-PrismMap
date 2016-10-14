@@ -18,6 +18,8 @@ $( document ).ready(function() {
       }
     })
    //mousemove is too slow, need to create a new layer at street level for mouseover
+   map.setPitch(60);
+   map.setBearing(24);
   map.on('click', function (e) {
        // console.log(e.point)
        var features = map.queryRenderedFeatures(e.point,{ layers: layersArray }); //queryRenderedFeatures returns an array

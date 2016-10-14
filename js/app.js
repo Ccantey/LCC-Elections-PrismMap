@@ -3,7 +3,7 @@ var activeTab = {
   geography:"cty",
   name:"COUNTYNAME"
 };
-var zoomThreshold = 8;
+var zoomThreshold = 6;
 
 // var layersArray = ['2012results-cty','2012results-vtd','2012results-sen','2012results-hse','2012results-cng','2012results-cty-hover','2012results-vtd-hover','2012results-sen-hover','2012results-hse-hover','2012results-cng-hover']
 var layersArray = []; // at 0.22.0 you can no longer have undefined layers in array - must push them dynamically
@@ -27,15 +27,14 @@ function initialize(){
 		container: 'map', // container id
 		// style: 'mapbox://styles/mapbox/dark-v9',
 		style: 'mapbox://styles/ccantey/ciqxtkg700003bqnleojbxy8t',
-		center: [-93.6678,46.50],
+		center: [-94.3996,45.6619],
 		maxBounds:bounds,		
-		zoom: 6,
+		zoom: 6.5,
 		minZoom: 6
 	});
 
     var nav = new mapboxgl.NavigationControl({position: 'top-right'}); // position is optional
     map.addControl(nav);
-
     // geocoder = new google.maps.Geocoder; //ccantey.dgxr9hbq
     geocoder = new mapboxgl.Geocoder();
 
@@ -48,24 +47,24 @@ function initialize(){
 
         var layers = [
             //name, minzoom, maxzoom, filter, paint fill-color, stops, paint fill-opacity, stops
-	        [
-		        'cty',                               //layers[0] = id
-		        3,                                   //layers[1] = minzoom
-		        zoomThreshold,                       //layers[2] = maxzoom
-		        ['==', 'UNIT', 'cty'],               //layers[3] = filter
-		        activeTab.selection+'WIN',           //layers[4] = fill-color property -- geojson.winner (add this property to geojson)
-		        [['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']],  //layers[5] = fill-color stops -- ['dfl':blue, 'r':red,'i':yellow]
-		        activeTab.selection+'TOTAL',         //layers[6] = fill-opacity property
-		        [                                    //layers[7] = fill-opacity stops (based on MN population)
-		            [0, 0.25],
-		            [17000, 0.45],
-		            [53000, 0.6],
-		            [140000, 0.7],
-		            [280000, 0.8],
-		            [700000, .99]
-		        ],                                     
-		        'hsl(55, 11%, 96%)'                  //layers[8] = outline color
-	        ], 
+	        // [
+		       //  'cty',                               //layers[0] = id
+		       //  3,                                   //layers[1] = minzoom
+		       //  zoomThreshold,                       //layers[2] = maxzoom
+		       //  ['==', 'UNIT', 'cty'],               //layers[3] = filter
+		       //  activeTab.selection+'WIN',           //layers[4] = fill-color property -- geojson.winner (add this property to geojson)
+		       //  [['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']],  //layers[5] = fill-color stops -- ['dfl':blue, 'r':red,'i':yellow]
+		       //  activeTab.selection+'TOTAL',         //layers[6] = fill-opacity property
+		       //  [                                    //layers[7] = fill-opacity stops (based on MN population)
+		       //      [0, 0.25],
+		       //      [17000, 0.45],
+		       //      [53000, 0.6],
+		       //      [140000, 0.7],
+		       //      [280000, 0.8],
+		       //      [700000, .99]
+		       //  ],                                     
+		       //  'hsl(55, 11%, 96%)'                  //layers[8] = outline color
+	        // ], 
 
    	        ['vtd', zoomThreshold, 20, ['==', 'UNIT', 'vtd'], activeTab.selection+'WIN', [['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']], activeTab.selection+'PCT', [[0, 0.25],[50, 0.45],[55, 0.6],[60, 0.7],[100, .99]], '#b8bbbf'],
    	        ['vtd-hover', zoomThreshold, 20, ['all', ['==', 'UNIT', 'vtd'], ["==", "VTD", ""]], 'USPRSTOTAL', [[6000, 'orange']], activeTab.selection+'PCT', [[6000, .5]], 'white'],
