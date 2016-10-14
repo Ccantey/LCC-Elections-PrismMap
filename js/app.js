@@ -26,7 +26,7 @@ function initialize(){
 	map = new mapboxgl.Map({
 		container: 'map', // container id
 		// style: 'mapbox://styles/mapbox/dark-v9',
-		style: 'mapbox://styles/ccantey/ciqxtkg700003bqnleojbxy8t',
+		style: 'mapbox://styles/ccantey/cirnvqq4d0011g9ng79ryx4ty',
 		center: [-94.3996,45.6619],
 		maxBounds:bounds,		
 		zoom: 6.5,
@@ -67,7 +67,7 @@ function initialize(){
 	        // ], 
 
    	        ['vtd', zoomThreshold, 20, ['==', 'UNIT', 'vtd'], activeTab.selection+'WIN', [['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']], activeTab.selection+'PCT', [[0, 0.25],[50, 0.45],[55, 0.6],[60, 0.7],[100, .99]], '#b8bbbf'],
-   	        ['vtd-hover', zoomThreshold, 20, ['all', ['==', 'UNIT', 'vtd'], ["==", "VTD", ""]], 'USPRSTOTAL', [[6000, 'orange']], activeTab.selection+'PCT', [[6000, .5]], 'white'],
+   	        ['vtd-hover', zoomThreshold, 20, ['all', ['==', 'UNIT', 'vtd'], ["==", "VTD", ""]], 'USPRSTOTAL', [[6000, 'orange']], activeTab.selection+'PCT', [[6000, 1]], 'white'],
             ['cty-hover', 3, zoomThreshold, ['all', ['==', 'UNIT', 'cty'], ["==", "COUNTYNAME", ""]], 'USPRSTOTAL', [[6000, 'orange']], activeTab.selection+'TOTAL', [[6000, .5]], 'white']
 	    ];      
 
@@ -143,6 +143,7 @@ function changeData(activetab){
 	};
 
     map.setPaintProperty("2012results-vtd", 'fill-color', {"type":'categorical', 'property': activeTab.selection+'WIN', 'stops':[['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']]})    // selection = map.querySourceFeatures('2012results-cty-hover', {sourceLayer:'AllResults', filter: ['has','COUNTYNAME']})
+    map.setPaintProperty("2012results-vtd", "fill-extrude-height",{'property':'USPRSTOTAL','stops':[[0, 1000],[750, 2000],[800, 5000],[900, 7000],[1500, 8000],[2500, 10000]]})
 	// showResults(activeTab, feature.properties);
 	var layer = [
 	    [activeTab.geography,          3, zoomThreshold, ['==', 'UNIT', activeTab.geography], activeTab.selection+'WIN', [['DFL', '#6582ac'],['R', '#cc7575'],['TIE', '#333']], opacityField, opacity, 'hsl(55, 11%, 96%)'],
@@ -175,14 +176,20 @@ function addLayer(layer) {
 		            "fill-color": {
 		            	"type":'categorical',
 		            	"property": layer[4], //layers[4] = fill-color property -- geojson.winner (add this property to geojson)
-		            	"stops": layer[5],    //layers[5] = fill-color stops -- ['dfl':blue, 'r':red,'i':yellow]
+		            	"stops": layer[5]    //layers[5] = fill-color stops -- ['dfl':blue, 'r':red,'i':yellow]
 		            },
-		            "fill-opacity": {
-		            	"type":'interval',
-		            	property: layer[6],
-		            	stops: layer[7]
-		            },
+		            "fill-opacity": 1,
+		            // {
+		            // 	"type":'interval',
+		            // 	property: layer[6],
+		            // 	stops: layer[7]
+		            // },
 		            "fill-outline-color": layer[8]
+		            ,
+		            "fill-extrude-height":{
+		            	property:'USPRSTOTAL',
+		            	stops:[[0, 0],[10000, 50000]]
+		            }
 		        }
 	         }, 'waterway-label');
 	         layersArray.push("2012results-"+ layer[0])
